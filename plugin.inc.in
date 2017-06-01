@@ -1,0 +1,20 @@
+/*
+	TODO: Put your copyright notice and license text here.
+*/
+
+#if defined _@PLUGIN_NAME_LOWERCASE@_inc
+	#endinput
+#endif
+#define _@PLUGIN_NAME_LOWERCASE@_inc
+
+public @PLUGIN_NAME_LOWERCASE@_ver = (@PLUGIN_VERSION_MAJOR@ << 24) | (@PLUGIN_VERSION_MINOR@ << 16) | @PLUGIN_VERSION_BUILD@;
+
+
+/* TODO: Add your plugin natives here. */
+native HelloWorld();
+
+// NOTE: The number of arguments for this native defined incorrectly
+// to test function pluginutils::CheckNumberOfArguments.
+native HelloWorld_CheckArgsTest();
+
+native HelloWorld_PrintNumber(number);
