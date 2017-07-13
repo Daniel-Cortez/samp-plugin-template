@@ -358,7 +358,7 @@ namespace pluginutils
 		return false;
 	}
 
-};
+}
 
 
 #endif // _PLUGINUTILS_H
