@@ -33,6 +33,11 @@ set(PLUGIN_LINK_DEPENDENCIES "")
 #==============================================================================#
 
 
+project(${PLUGIN_NAME}
+	LANGUAGES CXX
+	VERSION ${PLUGIN_VERSION_MAJOR}.${PLUGIN_VERSION_MINOR}.${PLUGIN_VERSION_BUILD}
+)
+
 string(TOLOWER ${PLUGIN_NAME} PLUGIN_NAME_LOWERCASE)
 configure_file("plugin.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME_LOWERCASE}.inc")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -53,6 +58,9 @@ if(UNIX)
 	)
 	add_definitions("/DLINUX")
 endif()
+if(MINGW)
+	add_definitions("/DHAVE_STDINT_H" "/D__need_size_t")
+endif()
 
 set(PLUGIN_SUPPORTS_FLAGS "SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES")
 if(PLUGIN_SUPPORTS_PROCESSTICK)
@@ -60,20 +68,22 @@ if(PLUGIN_SUPPORTS_PROCESSTICK)
 endif()
 configure_file("pluginconfig.h.in" "${CMAKE_CURRENT_BINARY_DIR}/pluginconfig.h")
 
-project(${PLUGIN_NAME}
-	VERSION ${PLUGIN_VERSION_MAJOR}.${PLUGIN_VERSION_MINOR}.${PLUGIN_VERSION_BUILD}
-)
 add_library(${PLUGIN_NAME_LOWERCASE} SHARED ${PLUGIN_SRC})
 target_link_libraries(${PLUGIN_NAME_LOWERCASE} ${PLUGIN_LINK_DEPENDENCIES})
-set_target_properties(${PLUGIN_NAME_LOWERCASE} PROPERTIES PREFIX "")
+set_property(TARGET ${PLUGIN_NAME_LOWERCASE} PROPERTY PREFIX "")
 if(MSVC)
 	set(STR_PLUGIN_DEF_PROCESSTICK "")
 	if(PLUGIN_SUPPORTS_PROCESSTICK)
 		set(STR_PLUGIN_DEF_PROCESSTICK "ProcessTick")
 	endif()
 	configure_file("plugin.def.in" "${CMAKE_CURRENT_BINARY_DIR}/plugin.def")
-	set_target_properties(${PLUGIN_NAME_LOWERCASE}
-		PROPERTIES LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_BINARY_DIR}/plugin.def\""
+	set_property(TARGET ${PLUGIN_NAME_LOWERCASE}
+		APPEND_STRING PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_BINARY_DIR}/plugin.def\""
+	)
+endif()
+if(MINGW)
+	set_property(TARGET ${PLUGIN_NAME_LOWERCASE}
+		APPEND_STRING PROPERTY LINK_FLAGS "-Wl,-k"
 	)
 endif()
 add_custom_command(
@@ -84,7 +94,7 @@ add_custom_command(
 )
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME_LOWERCASE}.inc" DESTINATION "include")
-install(TARGETS ${PLUGIN_NAME_LOWERCASE} RUNTIME DESTINATION "plugin")
+install(TARGETS ${PLUGIN_NAME_LOWERCASE} RUNTIME DESTINATION "plugins")
 if(WIN32)
 	set(CPACK_GENERATOR "ZIP")
 elseif(UNIX)

@@ -93,7 +93,7 @@ namespace pluginutils
 	{
 		cell include_version;
 		bool include_version_found = GetPublicVariable(amx, INCLUDE_VERSION_VAR_NAME, include_version);
-		if (include_version_found && include_version == PLUGIN_VERSION)
+		if (!include_version_found || include_version == PLUGIN_VERSION)
 			return true;
 		int inc_ver_major, inc_ver_minor, inc_ver_build, plug_ver_major, plug_ver_minor, plug_ver_build;
 		pluginutils::SplitVersion(include_version, inc_ver_major, inc_ver_minor, inc_ver_build);
@@ -204,7 +204,7 @@ namespace pluginutils
 		unsigned char *addr;
 #if BYTE_ORDER == LITTLE_ENDIAN
 		const size_t idx_mod_cellsize = (size_t)index & (sizeof(cell) - 1);
-		addr = &((unsigned char *)arr)[(size_t)index - idx_mod_cellsize] +
+		addr = (unsigned char *)(size_t)arr + (size_t)index - idx_mod_cellsize +
 			(sizeof(cell) - 1) - idx_mod_cellsize;
 #else // BYTE_ORDER == LITTLE_ENDIAN
 		addr = &((unsigned char *)arr)[(size_t)index];
@@ -236,8 +236,8 @@ namespace pluginutils
 		AMX_FUNCSTUB *natives =
 			(AMX_FUNCSTUB *)((size_t)hdr + (size_t)hdr->natives);
 		const size_t defsize = (size_t)hdr->defsize;
-		const size_t num_natives =
-			(size_t)(hdr->libraries - hdr->natives) / defsize;
+		const cell num_natives =
+			(cell)(hdr->libraries - hdr->natives) / defsize;
 		AMX_FUNCSTUB *func = NULL;
 #ifndef AMX_FLAG_OVERLAY
 		unsigned char *code = amx->base + (size_t)(hdr->cod);
@@ -256,17 +256,20 @@ namespace pluginutils
 			// Set the AMX_FLAG_BROWSE flag and call amx_Exec.
 			// If there's no jump table (ANSI C version) amx_Exec would just
 			// stumble upon the HALT instruction at address 0 and return.
-			const int flags = amx->flags;
-			const cell cip = amx->cip;
+			const int flags_bck = amx->flags;
+			const cell cip_bck = amx->cip;
+			const cell pri_bck = amx->pri;
 	#if defined AMX_FLAG_BROWSE
 			amx->flags |= AMX_FLAG_BROWSE;
 	#else
 			amx->flags |= AMX_FLAG_VERIFY;
 	#endif
+			amx->pri = 0;
 			amx->cip = 0;
 			amx_Exec(amx, (cell *)(size_t)&jump_table, AMX_EXEC_CONT);
-			amx->cip = cip;
-			amx->flags = flags;
+			amx->cip = cip_bck;
+			amx->pri = pri_bck;
+			amx->flags = flags_bck;
 #endif // CUR_FILE_VERSION < 11
 			jump_table_checked = true;
 		}
@@ -277,7 +280,7 @@ namespace pluginutils
 			op_addr = amx->cip - 3 * sizeof(cell);
 			if (op_addr < 0)
 				goto ret;
-			opcode = *(cell *)&(code[(size_t)op_addr]);
+			opcode = *(cell *)(code + (size_t)op_addr);
 			if (jump_table != NULL)
 			{
 				if (opcode == jump_table[OP_SYSREQ_N])
@@ -297,7 +300,7 @@ namespace pluginutils
 		op_addr = amx->cip - 2 * (cell)sizeof(cell);
 		if (op_addr < 0)
 			goto ret;
-		opcode = *(cell *)&(code[(size_t)op_addr]);
+		opcode = *(cell *)(void *)(code + (size_t)op_addr);
 
 		if ((jump_table != NULL)
 			? (opcode == jump_table[OP_SYSREQ_C]) : (opcode == OP_SYSREQ_C))
@@ -305,10 +308,11 @@ namespace pluginutils
 #ifdef AMX_FLAG_SYSREQN
 	sysreq_c:
 #endif
-			const size_t func_index =
-				(size_t)*(cell *)&(code[(size_t)op_addr + sizeof(cell)]);
-			if (func_index >= num_natives)
-				func = &natives[func_index];
+			const cell func_index =
+				*(cell *)(void *)(code + (size_t)op_addr + sizeof(cell));
+			if (func_index < num_natives)
+				func = (AMX_FUNCSTUB *)((unsigned char *)(void *)natives +
+					(size_t)func_index * (size_t)hdr->defsize);
 			goto ret;
 		}
 		if ((jump_table != NULL)
@@ -318,7 +322,7 @@ namespace pluginutils
 	sysreq_d:
 #endif
 			const ucell func_addr =
-				*(ucell *)&(code[(size_t)op_addr + sizeof(cell)]);
+				*(ucell *)(void *)(code + (size_t)op_addr + sizeof(cell));
 			func = natives;
 			size_t libraries = (size_t)amx->base + (size_t)hdr->libraries;
 			for (; (size_t)natives < libraries; *((size_t *)&func) += defsize)
@@ -333,7 +337,7 @@ namespace pluginutils
 		if (NULL == func)
 			return str_unknown;
 #if CUR_FILE_VERSION < 11
-		if (hdr->defsize != (int16_t)sizeof(AMX_FUNCSTUBNT))
+		if (hdr->defsize == (int16_t)sizeof(AMX_FUNCSTUB))
 			return (const char *)func->name;
 		return (const char *)
 			((size_t)hdr + (size_t)((AMX_FUNCSTUBNT *)func)->nameofs);
