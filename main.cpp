@@ -19,7 +19,7 @@ void *(*logprintf)(const char *fmt, ...);
 
 static cell AMX_NATIVE_CALL n_HelloWorld(AMX *amx, cell *params)
 {
-	logprintf("%s: This string was printed from a plugin.", pluginutils::GetCurrentNativeFunctionName(amx));
+	logprintf("%s: This line was printed from a plugin.", pluginutils::GetCurrentNativeFunctionName(amx));
 	return 1;
 }
 
