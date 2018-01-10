@@ -19,7 +19,7 @@ void *(*logprintf)(const char *fmt, ...);
 
 static cell AMX_NATIVE_CALL n_HelloWorld(AMX *amx, cell *params)
 {
-	logprintf("%s: This line was printed from a plugin.", pluginutils::GetCurrentNativeFunctionName(amx));
+	logprintf("%s: This line was printed from a plugin", pluginutils::GetCurrentNativeFunctionName(amx));
 	return 1;
 }
 
@@ -49,8 +49,15 @@ static cell AMX_NATIVE_CALL n_HelloWorld_CheckArgsTest(AMX *amx, cell *params)
 		return 0;
 	// The number of arguments for this function defined in the include file
 	// is invalid, so this code should never occur.
-	logprintf("This line shouldn't be printed.");
+	logprintf("This line shouldn't be printed");
 	return 1;
+}
+
+static AMX_NATIVE orig_IsPlayerConnected;
+static cell AMX_NATIVE_CALL hook_IsPlayerConnected(AMX *amx, cell *params)
+{
+	logprintf("Hello from hook_IsPlayerConnected");
+	return orig_IsPlayerConnected(amx, params);
 }
 
 
@@ -89,6 +96,13 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)
 	if (!pluginutils::CheckIncludeVersion(amx))
 		return 0;
 	amx_Register(amx, plugin_natives, (int)arraysize(plugin_natives));
+
+	// Native function hooking example.
+	bool native_found = pluginutils::ReplaceNative(
+		amx, "IsPlayerConnected", hook_IsPlayerConnected, &orig_IsPlayerConnected);
+	if (native_found)
+		logprintf("IsPlayerConnected hooked successfully");
+
 	return 1;
 }
 

@@ -1,5 +1,7 @@
 #==============================================================================#
-#   Copyright (c) 2017, Stanislav Gromov                                       #
+#   SA-MP plugin template v1.1                                                 #
+#                                                                              #
+#   Copyright (c) 2017-2018, Stanislav Gromov                                  #
 #                                                                              #
 #   Permission to use, copy, modify, and/or distribute this software for any   #
 #   purpose with or without fee is hereby granted, provided that the above     #
@@ -50,6 +52,7 @@ set(PLUGIN_SRC
 	"SDK/amxplugin.cpp"
 	"${CMAKE_CURRENT_BINARY_DIR}/pluginconfig.h"
 	"pluginutils.h"
+	"pluginutils.cpp"
 )
 if(UNIX)
 	set(PLUGIN_SRC
@@ -94,7 +97,10 @@ add_custom_command(
 )
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME_LOWERCASE}.inc" DESTINATION "include")
-install(TARGETS ${PLUGIN_NAME_LOWERCASE} RUNTIME DESTINATION "plugins")
+install(TARGETS ${PLUGIN_NAME_LOWERCASE}
+		LIBRARY DESTINATION "plugins"
+		RUNTIME DESTINATION "plugins"
+)
 if(WIN32)
 	set(CPACK_GENERATOR "ZIP")
 elseif(UNIX)

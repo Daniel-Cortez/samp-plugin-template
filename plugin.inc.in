@@ -8,6 +8,7 @@
 #define _@PLUGIN_NAME_LOWERCASE@_inc
 
 public @PLUGIN_NAME_LOWERCASE@_ver = (@PLUGIN_VERSION_MAJOR@ << 24) | (@PLUGIN_VERSION_MINOR@ << 16) | @PLUGIN_VERSION_BUILD@;
+#pragma unused @PLUGIN_NAME_LOWERCASE@_ver
 
 
 /* TODO: Add your plugin natives here. */

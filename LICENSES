@@ -1,6 +1,6 @@
 CMakeLists.txt is licensed under the ISC license.
 
-pluginutils.h is available under the terms of zlib license (listed in the file).
+pluginutils.h and pluginutils.cpp are available under the terms of zlib license
 
 All of the other files in this repository (except for SA-MP plugin SDK) are released under the Creative Commons Zero (CC0) license.
 You can get a copy of the CC0 license here:
