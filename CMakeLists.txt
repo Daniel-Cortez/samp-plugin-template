@@ -17,7 +17,7 @@
 #==============================================================================#
 
 cmake_minimum_required(VERSION 3.0)
-
+include(CheckIncludeFiles)
 
 #==============================================================================#
 # Settings                                                                     #
@@ -59,6 +59,12 @@ if(UNIX)
 		"${PLUGIN_SRC}"
 		"SDK/amx/sclinux.h"
 	)
+	# check compiler bits
+	if(CMAKE_COMPILER_IS_GNUCXX) 
+		if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4) 
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32") 
+		endif() 
+	endif()
 	add_definitions("/DLINUX")
 endif()
 if(MINGW)
@@ -80,6 +86,13 @@ if(MSVC)
 		set(STR_PLUGIN_DEF_PROCESSTICK "ProcessTick")
 	endif()
 	configure_file("plugin.def.in" "${CMAKE_CURRENT_BINARY_DIR}/plugin.def")
+	# check exists stddef.h and stdint.h
+	check_include_files (stddef.h HAVE_STDDEF_H)
+	check_include_files (stdint.h HAVE_STDINT_H)
+	if(HAVE_STDINT_H)
+		# add to preprocessor "HAVE_STDINT_H"
+		add_definitions(-DHAVE_STDINT_H)
+	endif(HAVE_STDINT_H)
 	set_property(TARGET ${PLUGIN_NAME_LOWERCASE}
 		APPEND_STRING PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_BINARY_DIR}/plugin.def\""
 	)
