@@ -17,7 +17,7 @@
 #==============================================================================#
 
 cmake_minimum_required(VERSION 3.0)
-
+include(CheckIncludeFiles)
 
 #==============================================================================#
 # Settings                                                                     #
@@ -32,13 +32,28 @@ set(PLUGIN_SRC
 	"main.cpp"
 )
 set(PLUGIN_LINK_DEPENDENCIES "")
+set(PLUGIN_COMPILE_DEFINITIONS "")
 #==============================================================================#
-
 
 project(${PLUGIN_NAME}
 	LANGUAGES CXX
 	VERSION ${PLUGIN_VERSION_MAJOR}.${PLUGIN_VERSION_MINOR}.${PLUGIN_VERSION_BUILD}
 )
+
+# Check include files availability
+set(REQUIRED_INCLUDE_FILES
+	"inttypes.h"
+	"stdint.h"
+	"alloca.h"
+)
+foreach(INCLUDE_FILE ${REQUIRED_INCLUDE_FILES})
+	string(REGEX REPLACE "\\.|/" "_" DEFINITION_NAME "HAVE_${INCLUDE_FILE}")
+	string(TOUPPER ${DEFINITION_NAME} DEFINITION_NAME)
+	check_include_files("${INCLUDE_FILE}" ${DEFINITION_NAME})
+	if(${DEFINITION_NAME})
+		set(PLUGIN_COMPILE_DEFINITIONS ${PLUGIN_COMPILE_DEFINITIONS} "${DEFINITION_NAME}=1")
+	endif()
+endforeach()
 
 string(TOLOWER ${PLUGIN_NAME} PLUGIN_NAME_LOWERCASE)
 configure_file("plugin.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME_LOWERCASE}.inc")
@@ -59,10 +74,17 @@ if(UNIX)
 		"${PLUGIN_SRC}"
 		"SDK/amx/sclinux.h"
 	)
-	add_definitions("/DLINUX")
+	set(PLUGIN_COMPILE_DEFINITIONS ${PLUGIN_COMPILE_DEFINITIONS} "LINUX")
 endif()
 if(MINGW)
-	add_definitions("/DHAVE_STDINT_H" "/D__need_size_t")
+	set(PLUGIN_COMPILE_DEFINITIONS ${PLUGIN_COMPILE_DEFINITIONS} "HAVE_STDINT_H=1" "__need_size_t")
+endif()
+
+# Make sure the target is 32-bit
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
+	if(CMAKE_COMPILER_IS_GNUCXX)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32") 
+	endif() 
 endif()
 
 set(PLUGIN_SUPPORTS_FLAGS "SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES")
@@ -73,6 +95,7 @@ configure_file("pluginconfig.h.in" "${CMAKE_CURRENT_BINARY_DIR}/pluginconfig.h")
 
 add_library(${PLUGIN_NAME_LOWERCASE} SHARED ${PLUGIN_SRC})
 target_link_libraries(${PLUGIN_NAME_LOWERCASE} ${PLUGIN_LINK_DEPENDENCIES})
+set_property(TARGET ${PLUGIN_NAME_LOWERCASE} APPEND_STRING PROPERTY "COMPILE_DEFINITIONS" ${PLUGIN_COMPILE_DEFINITIONS})
 set_property(TARGET ${PLUGIN_NAME_LOWERCASE} PROPERTY PREFIX "")
 if(MSVC)
 	set(STR_PLUGIN_DEF_PROCESSTICK "")
