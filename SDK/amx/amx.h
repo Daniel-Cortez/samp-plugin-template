@@ -84,12 +84,9 @@
 
 #if HAVE_ALLOCA_H
   #include <alloca.h>
+#elif defined __WIN32__ || defined _WIN32 || defined WIN32
+  #include <malloc.h>
 #endif
-/*#if defined __WIN32__ || defined _WIN32 || defined WIN32
-  #if !defined alloca
-    #define xalloca(n)   _alloca(n)
-  #endif
-#endif*/
 
 #if !defined arraysize
   #define arraysize(array)  (sizeof(array) / sizeof((array)[0]))
