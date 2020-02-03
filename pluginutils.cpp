@@ -1,5 +1,5 @@
 /*==============================================================================
-	Copyright (c) 2014-2018 Stanislav Gromov.
+	Copyright (c) 2014-2020 Stanislav Gromov.
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the
@@ -22,7 +22,8 @@ redistribute it freely, subject to the following restrictions:
 
 #include <cstring>
 #include "pluginutils.h"
-
+#include <string>
+#include <iostream>
 
 extern void *(*logprintf)(const char *fmt, ...);
 
@@ -235,5 +236,34 @@ namespace pluginutils
 		}
 		return false;
 	}
+
+	int SetAmxString(AMX* amx, cell params, std::string_view str) 
+	{
+		cell* dest = reinterpret_cast<cell*>(amx->base + static_cast<int>(reinterpret_cast<AMX_HEADER*>(amx->base)->dat + params));
+		cell* start = dest;
+
+		std::copy(str.begin(), str.end(), dest);
+		return str.length();
+	}
+
+	// Author urShadow | Link: https://github.com/urShadow/Pawn.CMD/blob/master/src/Main.cpp#L684-L706
+	std::string GetAmxString(AMX* amx, cell params) 
+	{
+		int len = 0;
+		cell* addr = nullptr;
+
+		if (amx_GetAddr(amx, params, &addr) == AMX_ERR_NONE && amx_StrLen(addr, &len) == AMX_ERR_NONE && len)
+		{
+			len++;
+			std::unique_ptr<char[]> buf{ new char[len] {} };
+
+			if (buf && amx_GetString(buf.get(), addr, 0, len) == AMX_ERR_NONE) 
+			{
+				return buf.get();
+			}
+		}
+		return {};
+	}
+
 
 }

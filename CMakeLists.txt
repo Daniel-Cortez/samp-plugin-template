@@ -1,7 +1,7 @@
 #==============================================================================#
 #   SA-MP plugin template v1.1                                                 #
 #                                                                              #
-#   Copyright (c) 2017-2018, Stanislav Gromov                                  #
+#   Copyright (c) 2017-2020, Stanislav Gromov                                  #
 #                                                                              #
 #   Permission to use, copy, modify, and/or distribute this software for any   #
 #   purpose with or without fee is hereby granted, provided that the above     #
@@ -26,6 +26,8 @@ set(PLUGIN_NAME "HelloWorld")
 set(PLUGIN_VERSION_MAJOR 0)
 set(PLUGIN_VERSION_MINOR 0)
 set(PLUGIN_VERSION_BUILD 1)
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(PLUGIN_SUPPORTS_PROCESSTICK FALSE)
 set(PLUGIN_SRC

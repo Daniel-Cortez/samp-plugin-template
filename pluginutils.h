@@ -1,5 +1,5 @@
 /*==============================================================================
-	Copyright (c) 2014-2018 Stanislav Gromov.
+	Copyright (c) 2014-2020 Stanislav Gromov.
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the
@@ -26,6 +26,7 @@ redistribute it freely, subject to the following restrictions:
 #include <cstdlib>
 #include "SDK/amx/amx.h"
 #include "pluginconfig.h"
+#include <string>
 
 #if !defined FORCE_INLINE
 	#if defined _MSC_VER
@@ -192,6 +193,15 @@ namespace pluginutils
 	*/
 	bool ReplaceNative(AMX *amx, const char *name, AMX_NATIVE ntv, AMX_NATIVE *orig);
 
+	/* 
+		Set string in native-func params
+	*/
+	int SetAmxString(AMX* amx, cell params, std::string_view str);
+
+	/*
+		Get string from params native func
+	*/
+	std::string GetAmxString(AMX* amx, cell params);
 }
 
 

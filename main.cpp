@@ -52,7 +52,39 @@ static cell AMX_NATIVE_CALL n_HelloWorld_CheckArgsTest(AMX *amx, cell *params)
 	logprintf("This line shouldn't be printed");
 	return 1;
 }
+static cell AMX_NATIVE_CALL n_HelloWorld_SetAmxString(AMX* amx, cell* params)
+{
+	enum
+	{
+		args_size,
+		arg_c_string,
+		arg_cpp_string,
+		__dummy_elem_, num_args_expected = __dummy_elem_ - 1
+	};
+	if (!CheckArgs())
+		return 0;
+	
+	const char* c_str = "Test C-string";
+	std::string cpp_str = "Test cplusplus-string";
 
+	pluginutils::SetAmxString(amx, params[arg_c_string], c_str);
+	pluginutils::SetAmxString(amx, params[arg_cpp_string], cpp_str);
+	return 1;
+}
+static cell AMX_NATIVE_CALL n_Test_PrintString(AMX* amx, cell* params)
+{
+	enum
+	{
+		args_size,
+		arg_string,
+		__dummy_elem_, num_args_expected = __dummy_elem_ - 1
+	};
+	if (!CheckArgs())
+		return 0;
+	std::string param_str = pluginutils::GetAmxString(amx, params[arg_string]);
+	logprintf("%s: %s", pluginutils::GetCurrentNativeFunctionName(amx), param_str.data());
+	return 1;
+}
 static AMX_NATIVE orig_IsPlayerConnected;
 static cell AMX_NATIVE_CALL hook_IsPlayerConnected(AMX *amx, cell *params)
 {
@@ -65,7 +97,9 @@ static AMX_NATIVE_INFO plugin_natives[] =
 {
 	{ "HelloWorld", n_HelloWorld },
 	{ "HelloWorld_PrintNumber", n_HelloWorld_PrintNumber },
-	{ "HelloWorld_CheckArgsTest", n_HelloWorld_CheckArgsTest }
+	{ "HelloWorld_CheckArgsTest", n_HelloWorld_CheckArgsTest },
+	{ "HelloWorld_PrintString", n_Test_PrintString },
+	{ "HelloWorld_SetAmxString", n_HelloWorld_SetAmxString },
 };
 
 
