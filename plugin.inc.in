@@ -19,3 +19,7 @@ native HelloWorld();
 native HelloWorld_CheckArgsTest();
 
 native HelloWorld_PrintNumber(number);
+
+/* Test function for string */
+native HelloWorld_SetAmxString(c_str[], cpp_str[]);
+native HelloWorld_PrintString(const str[]);
