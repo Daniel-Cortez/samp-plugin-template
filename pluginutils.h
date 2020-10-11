@@ -24,6 +24,7 @@ redistribute it freely, subject to the following restrictions:
 #define _PLUGINUTILS_H
 
 #include <cstdlib>
+#include <string>
 #include "SDK/amx/amx.h"
 #include "pluginconfig.h"
 
@@ -74,7 +75,7 @@ namespace pluginutils
 	bool CheckIncludeVersion(AMX *amx);
 
 	/*
-		Swaps bytes in a cell on Little Endian architectures.
+		Swaps bytes in a cell on little-endian architectures.
 	*/
 	FORCE_INLINE cell AlignCell(cell value)
 	{
@@ -116,7 +117,7 @@ namespace pluginutils
 	}
 
 	/*
-		Swaps bytes in array of cells on Little Endian architectures.
+		Swaps bytes in array of cells on little-endian architectures.
 	*/
 	FORCE_INLINE void AlignCellArray(cell a[], size_t num_elements)
 	{
@@ -149,7 +150,7 @@ namespace pluginutils
 
 	/*
 		Copies an array of cells.
-		Swaps cell bytes on the fly on Little Endian architectures.
+		Swaps cell bytes on the fly on little-endian architectures.
 	*/
 	FORCE_INLINE void CopyAndAlignCellArray(cell *dest, cell *src, size_t num_cells)
 	{
@@ -163,7 +164,7 @@ namespace pluginutils
 	}
 
 	/*
-		Returns the address of a byte in packed array.
+		Returns the address of a byte in a packed array.
 	*/
 	FORCE_INLINE unsigned char *GetPackedArrayCharAddr(cell arr[], cell index)
 	{
@@ -172,7 +173,7 @@ namespace pluginutils
 		return (unsigned char *)(size_t)arr + (size_t)index - idx_mod_cellsize +
 			(sizeof(cell) - 1) - idx_mod_cellsize;
 #else // BYTE_ORDER == LITTLE_ENDIAN
-		return &((unsigned char *)arr)[(size_t)index];
+		return &((unsigned char *)arr)[(ucell)index];
 #endif // BYTE_ORDER == LITTLE_ENDIAN
 	}
 
@@ -188,9 +189,28 @@ namespace pluginutils
 	bool CheckNumberOfArguments(AMX *amx, const cell *params, int num_expected);
 
 	/*
-		Replaces a native function with another one.
+		Replaces one native function with another.
 	*/
 	bool ReplaceNative(AMX *amx, const char *name, AMX_NATIVE ntv, AMX_NATIVE *orig);
+
+	/*
+		Obtains a NUL-terminated string, or returns NULL if the string address is invalid.
+		NOTE: The storage is allocated with 'malloc()' so in order to avoid memory leaks
+		the pointer must be passed to 'free()' when it's not needed anymore.
+	*/
+	char *GetCString(AMX *amx, cell address, int &error);
+
+	/*
+		Obtains a C++ string or returns an empty string if the address is invalid.
+	*/
+	std::string GetCXXString(AMX *amx, cell address, int &error);
+
+	/*
+		Sets a string in script memory from either a C string (NUL-terminated)
+		or a C++ string (std::string).
+	*/
+	bool SetCString(AMX *amx, cell address, cell size, const char *str, bool pack = false);
+	bool SetCXXString(AMX *amx, cell address, cell size, const std::string &str, bool pack = false);
 
 }
 

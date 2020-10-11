@@ -37,6 +37,29 @@ static cell AMX_NATIVE_CALL n_HelloWorld_PrintNumber(AMX *amx, cell *params)
 	return 1;
 }
 
+static cell AMX_NATIVE_CALL n_HelloWorld_PrintString(AMX *amx, cell *params)
+{
+	enum
+	{
+		args_size,
+		arg_str,
+		__dummy_elem_, num_args_expected = __dummy_elem_ - 1
+	};
+	if (!CheckArgs())
+		return 0;
+
+	char *str;
+	int error;
+
+	str = pluginutils::GetCString(amx, params[arg_str], error);
+	if (error != AMX_ERR_NONE)
+		return amx_RaiseError(amx, error), 0;
+	logprintf("%s: %s", pluginutils::GetCurrentNativeFunctionName(amx), str);
+
+	free(str); // The string returned by GetCString() needs to be freed manually.
+	return 1;
+}
+
 static cell AMX_NATIVE_CALL n_HelloWorld_CheckArgsTest(AMX *amx, cell *params)
 {
 	enum
@@ -65,6 +88,7 @@ static AMX_NATIVE_INFO plugin_natives[] =
 {
 	{ "HelloWorld", n_HelloWorld },
 	{ "HelloWorld_PrintNumber", n_HelloWorld_PrintNumber },
+	{ "HelloWorld_PrintString", n_HelloWorld_PrintString },
 	{ "HelloWorld_CheckArgsTest", n_HelloWorld_CheckArgsTest }
 };
 

@@ -19,3 +19,4 @@ native HelloWorld();
 native HelloWorld_CheckArgsTest();
 
 native HelloWorld_PrintNumber(number);
+native HelloWorld_PrintString(const str[]);

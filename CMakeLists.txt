@@ -1,7 +1,7 @@
 #==============================================================================#
-#   SA-MP plugin template v1.1                                                 #
+#   SA-MP plugin template v1.2                                                 #
 #                                                                              #
-#   Copyright (c) 2017-2018, Stanislav Gromov                                  #
+#   Copyright (c) 2017-2020, Stanislav Gromov                                  #
 #                                                                              #
 #   Permission to use, copy, modify, and/or distribute this software for any   #
 #   purpose with or without fee is hereby granted, provided that the above     #
@@ -83,8 +83,8 @@ endif()
 # Make sure the target is 32-bit
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
 	if(CMAKE_COMPILER_IS_GNUCXX)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32") 
-	endif() 
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+	endif()
 endif()
 
 set(PLUGIN_SUPPORTS_FLAGS "SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES")

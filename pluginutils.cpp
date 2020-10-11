@@ -89,7 +89,7 @@ namespace pluginutils
 			(AMX_FUNCSTUB *)((size_t)hdr + (size_t)hdr->natives);
 		const size_t defsize = (size_t)hdr->defsize;
 		const cell num_natives =
-			(cell)(hdr->libraries - hdr->natives) / defsize;
+			(cell)(hdr->libraries - hdr->natives) / (cell)defsize;
 		AMX_FUNCSTUB *func = NULL;
 #ifndef AMX_FLAG_OVERLAY
 		unsigned char *code = amx->base + (size_t)(hdr->cod);
@@ -234,6 +234,80 @@ namespace pluginutils
 			return true;
 		}
 		return false;
+	}
+
+	char *GetCString(AMX *amx, cell address, int &error)
+	{
+		int len;
+		cell *cptr;
+		char *cstr;
+
+		error = amx_GetAddr(amx, address, &cptr);
+		if (error != AMX_ERR_NONE)
+			return NULL;
+
+		error = amx_StrLen(cptr, &len);
+		if (error != AMX_ERR_NONE)
+			return NULL;
+
+		cstr = (char *)malloc((size_t)(len + 1) * sizeof(char));
+		if (cstr == NULL)
+		{
+			error = AMX_ERR_MEMORY;
+			return NULL;
+		}
+
+		error = amx_GetString(cstr, cptr, 0, (size_t)(len + 1));
+		if (error != AMX_ERR_NONE)
+			return NULL;
+
+		return cstr;
+	}
+
+	std::string GetCXXString(AMX *amx, cell address, int &error)
+	{
+		int len;
+		cell *cptr;
+		char *cstr;
+
+		error = amx_GetAddr(amx, address, &cptr);
+		if (error != AMX_ERR_NONE)
+			return NULL;
+
+		error = amx_StrLen(cptr, &len);
+		if (error != AMX_ERR_NONE)
+			return NULL;
+
+		cstr = (char *)alloca((size_t)(len + 1) * sizeof(char));
+		if (cstr == NULL)
+		{
+			error = AMX_ERR_MEMORY;
+			return NULL;
+		}
+
+		error = amx_GetString(cstr, cptr, 0, (size_t)(len + 1));
+		if (error != AMX_ERR_NONE)
+			return NULL;
+
+		std::string str(cstr);
+		return str;
+	}
+
+	bool SetCString(AMX *amx, cell address, cell size, const char *str, bool pack)
+	{
+		cell *cptr;
+		int error;
+
+		error = amx_GetAddr(amx, address, &cptr);
+		if (error != AMX_ERR_NONE)
+			return false;
+
+		return (amx_SetString(cptr, str, (pack) ? 1 : 0, 0, size) != AMX_ERR_NONE);
+	}
+
+	bool SetCXXString(AMX *amx, cell address, cell size, const std::string &str, bool pack)
+	{
+		return SetCString(amx, address, size, str.c_str(), pack);
 	}
 
 }
